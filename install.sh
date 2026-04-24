@@ -19,7 +19,7 @@ echo ""
 # ── Node.js 20 ────────────────────────────────────────
 if ! command -v node &>/dev/null || [[ $(node -v | cut -dv -f2 | cut -d. -f1) -lt 20 ]]; then
   info "Installing Node.js 20..."
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - -q
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   apt-get install -y -q nodejs
 fi
 ok "Node.js $(node -v)"
