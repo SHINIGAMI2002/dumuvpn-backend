@@ -3,175 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dumuVPN Admin | Management</title>
+    <title>DomuVPN — เน็ตแรง เสถียร สำหรับ AIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f1f5f9; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .status-pending { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
-        .status-provisioned { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        .status-rejected { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .plan-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
+        .gradient-text { background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-white">dumuVPN <span class="text-blue-500 text-xl">Admin Control</span></h1>
-                <p class="text-slate-400">ระบบจัดการคำสั่งซื้อและอนุมัติ VPN</p>
+<body class="antialiased">
+
+    <nav class="fixed top-0 left-0 right-0 z-40 glass border-b border-white/5 py-4 px-6">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
+                    <span class="text-white font-bold text-xl">D</span>
+                </div>
+                <span class="text-2xl font-bold tracking-tight text-white">Domu<span class="gradient-text">VPN</span></span>
             </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <input type="password" id="adminSecret" placeholder="กรอก ADMIN_SECRET" 
-                    class="bg-slate-800 border border-white/10 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full">
-                <button onclick="refreshData()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20">
-                    รีเฟรช
-                </button>
+            <div class="text-xs text-slate-400">
+                สถานะระบบ: <span class="text-green-400 flex items-center inline-flex ml-1">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span> พร้อมส่งอัตโนมัติ
+                </span>
             </div>
         </div>
+    </nav>
 
-        <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
-            </div>
+    <section class="pt-32 pb-10 text-center px-6">
+        <h1 class="text-5xl font-bold mb-4">เน็ตเร็ว แรงสะใจ <span class="gradient-text">500 Mbps</span></h1>
+        <p class="text-slate-400 max-w-xl mx-auto mb-8">เพิ่มความเสถียร ลดปิง ทะลุการบล็อก สำหรับผู้ใช้ AIS โดยเฉพาะ</p>
+        
+        <div class="max-w-lg mx-auto bg-amber-500/10 border border-amber-500/50 p-4 rounded-2xl mb-10 text-sm">
+            <span class="text-amber-400 font-bold">⚠️ สำคัญ:</span> 
+            นี่ไม่ใช่แพ็กเกจเน็ต คุณต้องมีเน็ต AIS อยู่แล้วถึงจะใช้งานได้
+        </div>
+    </section>
 
-        <div class="glass-card rounded-[2rem] overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                <h2 class="text-xl font-semibold">รายการคำสั่งซื้อล่าสุด</h2>
-                <select id="statusFilter" onchange="fetchOrders()" class="bg-slate-800 border-none rounded-lg text-sm px-4 py-2 text-slate-300">
-                    <option value="">ทั้งหมด</option>
-                    <option value="pending">รอตรวจสอบ</option>
-                    <option value="provisioned">อนุมัติแล้ว</option>
-                    <option value="rejected">ปฏิเสธแล้ว</option>
-                </select>
+    <section class="max-w-4xl mx-auto px-6 grid md:grid-cols-2 gap-6 mb-20">
+        <div class="glass p-8 rounded-[2rem] border-2 border-transparent transition-all plan-card text-center">
+            <h3 class="text-xl mb-2 text-slate-300">Standard Pack</h3>
+            <div class="text-5xl font-bold mb-4 text-white">30<span class="text-lg text-slate-500 font-normal"> / 30 วัน</span></div>
+            <div class="bg-blue-600/10 text-blue-400 text-[10px] py-1 px-3 rounded-full inline-block mb-6 border border-blue-600/20">
+                สินค้าในคลัง: <span id="stock-standard">กำลังโหลด...</span>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider">
-                            <th class="p-5 font-medium">วันเวลา</th>
-                            <th class="p-5 font-medium">ลูกค้า / ติดต่อ</th>
-                            <th class="p-5 font-medium text-center">สลิป</th>
-                            <th class="p-5 font-medium">สถานะ</th>
-                            <th class="p-5 font-medium text-center">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ordersTableBody" class="divide-y divide-white/5">
-                        <tr><td colspan="5" class="p-10 text-center text-slate-500">กรุณาใส่ Secret Key และกดรีเฟรช</td></tr>
-                    </tbody>
-                </table>
+            <ul class="text-slate-400 text-sm space-y-3 mb-8 text-left max-w-[200px] mx-auto">
+                <li>✅ เน็ตแรง 500 Mbps</li>
+                <li>✅ ส่งไฟล์ทันทีทางอีเมล</li>
+                <li>✅ รองรับ VLESS Reality</li>
+            </ul>
+            <button onclick="openOrder('standard', 30)" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20">ซื้อตอนนี้</button>
+        </div>
+
+        <div class="glass p-8 rounded-[2rem] border-2 border-transparent transition-all plan-card text-center">
+            <h3 class="text-xl mb-2 text-slate-300">Duo Pack</h3>
+            <div class="text-5xl font-bold mb-4 text-white">55<span class="text-lg text-slate-500 font-normal"> / 30 วัน</span></div>
+            <div class="bg-blue-600/10 text-blue-400 text-[10px] py-1 px-3 rounded-full inline-block mb-6 border border-blue-600/20">
+                สินค้าในคลัง: <span id="stock-duo">กำลังโหลด...</span>
+            </div>
+            <ul class="text-slate-400 text-sm space-y-3 mb-8 text-left max-w-[200px] mx-auto">
+                <li>✅ ใช้งานได้ 2 อุปกรณ์</li>
+                <li>✅ ส่งไฟล์ทันทีทางอีเมล</li>
+                <li>✅ ความเร็วเต็มสปีด</li>
+            </ul>
+            <button onclick="openOrder('duo', 55)" class="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition-all">ซื้อตอนนี้</button>
+        </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-6 mb-20">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold">🟢 AIS (กันรั่ว)</h2>
+            <p class="text-slate-400 text-sm mt-2">ความเร็วประมาณ 1–200 Mbps</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="glass p-6 rounded-2xl border border-white/10">
+                <h3 class="text-lg font-semibold mb-2">วิธีที่ 1 (ฟรี)</h3>
+                <div class="space-y-3 text-sm text-slate-300">
+                    <div>
+                        <p class="font-medium text-white">ซิมใหม่ (ไม่เกิน 30 วัน) กด *777*44#</p>
+                        <p class="font-medium text-white">ซิมเก่า (เกิน 30 วัน) กด *777*1043#</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl border-2 border-green-500 relative overflow-hidden">
+                <div class="absolute top-2 right-[-35px] bg-green-500 text-[10px] px-10 py-1 rotate-45 font-bold text-black">แนะนำ</div>
+                <h3 class="text-lg font-semibold mb-2">วิธีที่ 2 (สมัครตรง)</h3>
+                <p class="text-sm text-slate-300">📱 กด *777*7068# โทรออก (35.31 บาท / 30 วัน)</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div id="slipModal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4" onclick="closeSlip()">
-        <img id="slipImg" src="" class="max-h-full max-w-full rounded-lg shadow-2xl">
+    <div id="orderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div class="bg-slate-900 w-full max-w-md rounded-3xl p-8 border border-white/10 relative">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white text-2xl">&times;</button>
+            
+            <div id="formSection">
+                <h2 class="text-2xl font-bold mb-1">แจ้งชำระเงิน</h2>
+                <p id="planDisplay" class="text-blue-400 text-sm mb-6">แผน: Standard - 30 บาท</p>
+
+                <div class="bg-white p-4 rounded-2xl mb-6 w-48 mx-auto">
+                    <img src="https://promptpay.io/0812345678/30.png" id="qrImg" class="w-full">
+                    <p class="text-black text-[10px] mt-2 font-bold text-center">สแกนเพื่อโอนเงิน</p>
+                </div>
+
+                <form id="orderForm" class="space-y-4">
+                    <input type="hidden" name="plan" id="inputPlan">
+                    
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">ชื่อลูกค้า</label>
+                        <input type="text" name="name" required placeholder="ชื่อของคุณ" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">อีเมล (สำหรับรับไฟล์ Config)</label>
+                        <input type="email" name="email" required placeholder="example@gmail.com" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">ช่องทางติดต่ออื่นๆ (LINE ID)</label>
+                        <input type="text" name="contact" required placeholder="ID LINE" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">แนบรูปสลิป</label>
+                        <input type="file" name="slip" id="slipInput" accept="image/*" required class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-600 file:text-white cursor-pointer">
+                    </div>
+
+                    <button type="submit" id="btnSubmit" class="w-full bg-blue-600 py-4 rounded-xl font-bold shadow-lg shadow-blue-600/20">ยืนยันการโอนเงิน</button>
+                </form>
+            </div>
+
+            <div id="successSection" class="hidden text-center py-10">
+                <div class="text-6xl mb-4">🚀</div>
+                <h2 class="text-2xl font-bold mb-2">รับคำสั่งซื้อแล้ว!</h2>
+                <p class="text-slate-400 text-sm">เราจะตรวจสอบสลิปและส่ง Config ให้คุณทางอีเมลภายใน 5 นาที</p>
+                <button onclick="closeModal()" class="mt-8 text-blue-400 underline">กลับหน้าหลัก</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const secretInput = document.getElementById('adminSecret');
-        secretInput.value = localStorage.getItem('vpn_admin_secret') || '';
+        const modal = document.getElementById('orderModal');
+        const orderForm = document.getElementById('orderForm');
 
-        function getAuthHeaders() {
-            const secret = secretInput.value;
-            localStorage.setItem('vpn_admin_secret', secret);
-            return { 'x-admin-secret': secret };
+        function openOrder(plan, price) {
+            document.getElementById('inputPlan').value = plan;
+            document.getElementById('planDisplay').innerText = `แผนที่เลือก: ${plan.toUpperCase()} - ${price} บาท`;
+            document.getElementById('qrImg').src = `https://promptpay.io/0812345678/${price}.png`; // แก้เป็นเบอร์คุณ
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
-        async function refreshData() {
-            if(!secretInput.value) return alert('กรุณากรอก Secret Key');
-            await fetchStats();
-            await fetchOrders();
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('successSection').classList.add('hidden');
+            orderForm.reset();
         }
 
-        async function fetchStats() {
+        // Logic การส่งข้อมูล (เชื่อมกับ POST /api/orders ใน orders.js)
+        orderForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerText = 'กำลังส่งข้อมูล...';
+
+            const formData = new FormData(orderForm);
+
             try {
-                const res = await fetch('/admin/stats', { headers: getAuthHeaders() });
+                // อ้างอิง Endpoint จาก server.js ที่คุณมี (app.use('/api/orders', ordersRouter))
+                const res = await fetch('/api/orders', {
+                    method: 'POST',
+                    body: formData
+                });
+
                 const data = await res.json();
-                if (!data.ok) return;
 
-                const s = data.stats;
-                const statsArr = [
-                    { label: 'รอตรวจสอบ', val: s.pending, color: 'text-amber-400' },
-                    { label: 'อนุมัติแล้ว', val: s.provisioned, color: 'text-emerald-400' },
-                    { label: 'ปฏิเสธ', val: s.rejected, color: 'text-red-400' },
-                    { label: 'รวม', val: s.total, color: 'text-blue-400' }
-                ];
-
-                document.getElementById('statsGrid').innerHTML = statsArr.map(st => `
-                    <div class="glass-card p-6 rounded-2xl">
-                        <p class="text-slate-400 text-xs mb-1">${st.label}</p>
-                        <p class="text-3xl font-bold ${st.color}">${st.val || 0}</p>
-                    </div>
-                `).join('');
-            } catch (e) { console.error(e); }
-        }
-
-        async function fetchOrders() {
-            const status = document.getElementById('statusFilter').value;
-            const tbody = document.getElementById('ordersTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center">กำลังโหลด...</td></tr>';
-
-            try {
-                const res = await fetch(`/admin/orders?status=${status}`, { headers: getAuthHeaders() });
-                const data = await res.json();
-                if (!data.ok) throw new Error(data.error);
-
-                tbody.innerHTML = data.orders.map(o => `
-                    <tr class="hover:bg-white/[0.02] transition-colors">
-                        <td class="p-5 text-sm">
-                            <div class="text-white">${new Date(o.created_at).toLocaleDateString()}</div>
-                            <div class="text-slate-500 text-xs">${new Date(o.created_at).toLocaleTimeString()}</div>
-                        </td>
-                        <td class="p-5">
-                            <div class="font-bold text-white">${o.name}</div>
-                            <div class="text-xs text-blue-400">${o.email}</div>
-                        </td>
-                        <td class="p-5 text-center">
-                            <button onclick="viewSlip('${o.id}')" class="text-slate-400 hover:text-white underline text-xs">👀 ดูรูป</button>
-                        </td>
-                        <td class="p-5">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold status-${o.status}">
-                                ${o.status.toUpperCase()}
-                            </span>
-                        </td>
-                        <td class="p-5">
-                            <div class="flex justify-center gap-2">
-                                ${o.status === 'pending' ? `
-                                    <button onclick="handleAction('approve', '${o.id}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded text-xs font-bold transition-all">Approve</button>
-                                    <button onclick="handleAction('reject', '${o.id}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded text-xs font-bold transition-all">Reject</button>
-                                ` : `<span class="text-slate-600 text-[10px]">เรียบร้อย</span>`}
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500">Error: ${e.message}</td></tr>`; }
-        }
-
-        async function handleAction(action, id) {
-            let reason = '';
-            if (action === 'reject') {
-                reason = prompt('ระบุเหตุผล (จะถูกส่งในอีเมลลูกค้า):');
-                if (reason === null) return;
-            }
-
-            try {
-                const res = await fetch(`/admin/${action}/${id}?secret=${secretInput.value}${reason ? '&reason='+reason : ''}`, { method: 'POST' });
-                if (res.ok) {
-                    alert('ดำเนินการสำเร็จ!');
-                    refreshData();
+                if (data.ok) {
+                    document.getElementById('formSection').classList.add('hidden');
+                    document.getElementById('successSection').classList.remove('hidden');
                 } else {
-                    alert('เกิดข้อผิดพลาด');
+                    alert('เกิดข้อผิดพลาด: ' + (data.errors ? data.errors.join(', ') : data.error));
                 }
-            } catch (e) { alert('Network Error'); }
-        }
-
-        function viewSlip(id) {
-            document.getElementById('slipImg').src = `/admin/slip/${id}?secret=${secretInput.value}`;
-            document.getElementById('slipModal').classList.remove('hidden');
-        }
-
-        function closeSlip() { document.getElementById('slipModal').classList.add('hidden'); }
-
-        if(secretInput.value) refreshData();
+            } catch (err) {
+                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'ยืนยันการโอนเงิน';
+            }
+        };
     </script>
+
 </body>
-</html>
+    </html>
