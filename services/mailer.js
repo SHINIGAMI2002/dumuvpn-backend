@@ -172,3 +172,69 @@ export async function verifyConnection() {
   await transport.verify()
   console.log('[mailer] SMTP connection OK')
 }
+  <div class="link-box">
+    <div class="link-label">🔗 VLESS Connection Link</div>
+    <div class="link-val">${vlessLink}</div>
+  </div>
+
+  <div class="steps">
+    <h3>วิธีตั้งค่าใน 3 ขั้นตอน</h3>
+    <ol>
+      <li>ดาวน์โหลดแอป Hiddify (iOS/Android) หรือ v2rayNG (Android)</li>
+      <li>กด "+" แล้วเลือก "Import from clipboard" แล้ว paste link ด้านบน</li>
+      <li>กด Connect — พร้อมใช้งาน!</li>
+    </ol>
+  </div>
+
+  <div class="apps">
+    <h3>แอปที่รองรับ</h3>
+    <ul class="app-list">
+      <li>Hiddify — iOS &amp; Android (แนะนำ)</li>
+      <li>v2rayNG — Android</li>
+      <li>Shadowrocket — iOS</li>
+      <li>NekoRay / NekoBox — Windows &amp; Linux</li>
+      <li>Hiddify Next — macOS &amp; Windows</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    มีปัญหา? ติดต่อได้ที่<br>
+    Facebook: facebook.com/thanapol.chaipanna<br>
+    LINE: i2DIEUnUNW<br><br>
+    © 2025 dumuVPN
+  </div>
+</div>
+</body></html>`,
+  })
+}
+
+// ── แจ้ง reject ────────────────────────────────────────────────
+export async function notifyRejected(order, reason = '') {
+  await transport.sendMail({
+    from:    FROM,
+    to:      order.email,
+    subject: `[dumuVPN] คำสั่งซื้อของคุณไม่ผ่านการตรวจสอบ`,
+    html: `
+<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<style>body{font-family:-apple-system,sans-serif;background:#f5f5f5;margin:0;padding:24px}
+.card{background:#fff;border-radius:12px;padding:32px;max-width:480px;margin:0 auto}
+h2{margin:0 0 8px;color:#111}
+p{color:#555;font-size:14px;line-height:1.7}
+.reason{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;font-size:14px;color:#991b1b;margin:16px 0}
+</style></head><body>
+<div class="card">
+  <h2>คำสั่งซื้อไม่ผ่านการตรวจสอบ</h2>
+  <p>เรียนคุณ ${order.name},</p>
+  <p>คำสั่งซื้อหมายเลข <strong>${order.id}</strong> ไม่ผ่านการตรวจสอบสลิปการชำระเงิน</p>
+  ${reason ? `<div class="reason">${reason}</div>` : ''}
+  <p>หากคิดว่าเป็นความผิดพลาด กรุณาติดต่อทีมงานที่<br>
+  Facebook: facebook.com/thanapol.chaipanna<br>
+  LINE: i2DIEUnUNW</p>
+</div></body></html>`,
+  })
+}
+
+export async function verifyConnection() {
+  await transport.verify()
+  console.log('[mailer] SMTP connection OK')
+}
