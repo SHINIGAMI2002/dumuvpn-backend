@@ -9,8 +9,8 @@ const INBOUND_ID  = parseInt(process.env.XRAY_INBOUND_ID || '1')
 let _cookie = null   // session cookie จาก login
 
 // ── Login ─────────────────────────────────────────────────────
-async function login() {
-  const res = await fetch(`${BASE}/login`, {
+async function login() 
+  const res = await fetch(`${BASE}/login`,
     method:  'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body:    new URLSearchParams({ username: USERNAME, password: PASSWORD }),
@@ -70,18 +70,30 @@ export async function addClient({ uuid, email, limitGB = 0, expiryDays, inboundI
     ? Date.now() + expiryDays * 24 * 60 * 60 * 1000
     : 0
 
+  // สร้างฟังก์ชันสุ่ม subId (ตัวเลข+ตัวอักษร 12 หลัก)
+  const randomSubId = Math.random().toString(36).substring(2, 14);
+
   const client = {
     id:         uuid,
-    flow:       'xtls-rprx-vision',   // สำหรับ VLESS Reality
+    flow:       'xtls-rprx-vision',   
     email,
     limitIp:    0,
-    totalGB:    limitGB * 1024 ** 3,  // bytes, 0 = unlimited
+    totalGB:    limitGB * 1024 ** 3,  
     expiryTime,
     enable:     true,
     tgId:       '',
-    subId:      '',
+    subId:      randomSubId, // แก้ตรงนี้จากเดิมที่เป็น '' ให้เป็นตัวแปร randomSubId
     reset:      0,
   }
+
+  await apiFetch(`/panel/api/inbounds/addClient`, {
+    method: 'POST',
+    body:   JSON.stringify({ id: inboundId, settings: JSON.stringify({ clients: [client] }) }),
+  })
+
+  console.log(`[xray] client added: ${email} (${uuid}) with subId: ${randomSubId}`)
+  return client
+}
 
   await apiFetch(`/panel/api/inbounds/addClient`, {
     method: 'POST',
