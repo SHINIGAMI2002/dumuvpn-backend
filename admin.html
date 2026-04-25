@@ -30,8 +30,32 @@
             </div>
         </div>
 
-        <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
+        <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center"></div>
+
+        <div class="glass-card rounded-[2rem] p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="mr-2">📦</span> เติมสินค้าเข้าคลัง
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-slate-500 mb-1">Config Link (VLESS/Trojan)</label>
+                    <textarea id="stockConfig" placeholder="vless://... หรือ trojan://..." 
+                        class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none h-12"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-500 mb-1">เลือกแพ็กเกจ</label>
+                    <select id="stockPlan" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2 outline-none text-slate-300">
+                        <option value="standard">Standard (30 วัน)</option>
+                        <option value="duo">Duo (60 วัน)</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="addStock()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20">
+                        เพิ่มเข้าคลัง
+                    </button>
+                </div>
             </div>
+        </div>
 
         <div class="glass-card rounded-[2rem] overflow-hidden shadow-2xl">
             <div class="p-6 border-b border-white/5 flex justify-between items-center">
@@ -80,6 +104,35 @@
             if(!secretInput.value) return alert('กรุณากรอก Secret Key');
             await fetchStats();
             await fetchOrders();
+        }
+
+        // ฟังก์ชันเพิ่ม Stock (รวมให้แล้ว)
+        async function addStock() {
+            const config = document.getElementById('stockConfig').value;
+            const plan = document.getElementById('stockPlan').value;
+            const secret = secretInput.value;
+
+            if(!secret) return alert('กรุณากรอก Secret Key ก่อน');
+            if(!config) return alert('กรุณาวาง Config');
+
+            try {
+                const res = await fetch('/admin/stock/add', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-secret': secret 
+                    },
+                    body: JSON.stringify({ plan, config })
+                });
+                const data = await res.json();
+                if(data.ok) {
+                    alert('เพิ่มสินค้าสำเร็จ! (เหลือในคลัง: ' + data.count + ')');
+                    document.getElementById('stockConfig').value = '';
+                    fetchStats(); // รีเฟรชตัวเลขสถิติเพื่อให้เห็นจำนวนล่าสุด
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (e) { alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'); }
         }
 
         async function fetchStats() {
@@ -133,10 +186,10 @@
                                 ${o.status.toUpperCase()}
                             </span>
                         </td>
-                        <td class="p-5">
+                        <td class="p-5 text-center">
                             <div class="flex justify-center gap-2">
                                 ${o.status === 'pending' ? `
-                                    <button onclick="handleAction('approve', '${o.id}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded text-xs font-bold transition-all">Approve</button>
+                                    <button onclick="handleAction('approve', '${o.id}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded text-xs font-bold transition-all text-white">Approve</button>
                                     <button onclick="handleAction('reject', '${o.id}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded text-xs font-bold transition-all">Reject</button>
                                 ` : `<span class="text-slate-600 text-[10px]">เรียบร้อย</span>`}
                             </div>
