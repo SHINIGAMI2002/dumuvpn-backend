@@ -97,44 +97,25 @@
     <div id="orderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
         <div class="bg-slate-900 w-full max-w-md rounded-3xl p-8 border border-white/10 relative">
             <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white text-2xl">&times;</button>
-            
             <div id="formSection">
                 <h2 class="text-2xl font-bold mb-1">แจ้งชำระเงิน</h2>
-                <p id="planDisplay" class="text-blue-400 text-sm mb-6">แผน: Standard - 30 บาท</p>
-
+                <p id="planDisplay" class="text-blue-400 text-sm mb-6"></p>
                 <div class="bg-white p-4 rounded-2xl mb-6 w-48 mx-auto">
-                    <img src="https://promptpay.io/0812345678/30.png" id="qrImg" class="w-full">
-                    <p class="text-black text-[10px] mt-2 font-bold text-center">สแกนเพื่อโอนเงิน</p>
+                    <img src="" id="qrImg" class="w-full">
                 </div>
-
                 <form id="orderForm" class="space-y-4">
                     <input type="hidden" name="plan" id="inputPlan">
-                    
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">ชื่อลูกค้า</label>
-                        <input type="text" name="name" required placeholder="ชื่อของคุณ" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">อีเมล (สำหรับรับไฟล์ Config)</label>
-                        <input type="email" name="email" required placeholder="example@gmail.com" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">ช่องทางติดต่ออื่นๆ (LINE ID)</label>
-                        <input type="text" name="contact" required placeholder="ID LINE" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-500 mb-1">แนบรูปสลิป</label>
-                        <input type="file" name="slip" id="slipInput" accept="image/*" required class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-600 file:text-white cursor-pointer">
-                    </div>
-
+                    <input type="text" name="name" required placeholder="ชื่อของคุณ" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="email" name="email" required placeholder="อีเมลสำหรับรับไฟล์" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="contact" required placeholder="ID LINE" class="w-full bg-slate-800 border border-white/5 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="file" name="slip" id="slipInput" accept="image/*" required class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-600 file:text-white cursor-pointer">
                     <button type="submit" id="btnSubmit" class="w-full bg-blue-600 py-4 rounded-xl font-bold shadow-lg shadow-blue-600/20">ยืนยันการโอนเงิน</button>
                 </form>
             </div>
-
             <div id="successSection" class="hidden text-center py-10">
                 <div class="text-6xl mb-4">🚀</div>
                 <h2 class="text-2xl font-bold mb-2">รับคำสั่งซื้อแล้ว!</h2>
-                <p class="text-slate-400 text-sm">เราจะตรวจสอบสลิปและส่ง Config ให้คุณทางอีเมลภายใน 5 นาที</p>
+                <p class="text-slate-400 text-sm">เราจะตรวจสอบสลิปและส่ง Config ให้ทางอีเมล</p>
                 <button onclick="closeModal()" class="mt-8 text-blue-400 underline">กลับหน้าหลัก</button>
             </div>
         </div>
@@ -147,7 +128,7 @@
         function openOrder(plan, price) {
             document.getElementById('inputPlan').value = plan;
             document.getElementById('planDisplay').innerText = `แผนที่เลือก: ${plan.toUpperCase()} - ${price} บาท`;
-            document.getElementById('qrImg').src = `https://promptpay.io/0812345678/${price}.png`; // แก้เป็นเบอร์คุณ
+            document.getElementById('qrImg').src = `https://promptpay.io/0812345678/${price}.png`; // แก้เป็นเบอร์โทรศัพท์ของคุณ
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
@@ -160,38 +141,44 @@
             orderForm.reset();
         }
 
-        // Logic การส่งข้อมูล (เชื่อมกับ POST /api/orders ใน orders.js)
         orderForm.onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
             btn.disabled = true;
             btn.innerText = 'กำลังส่งข้อมูล...';
-
             const formData = new FormData(orderForm);
-
             try {
-                // อ้างอิง Endpoint จาก server.js ที่คุณมี (app.use('/api/orders', ordersRouter))
-                const res = await fetch('/api/orders', {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const res = await fetch('/api/orders', { method: 'POST', body: formData });
                 const data = await res.json();
-
                 if (data.ok) {
                     document.getElementById('formSection').classList.add('hidden');
                     document.getElementById('successSection').classList.remove('hidden');
                 } else {
-                    alert('เกิดข้อผิดพลาด: ' + (data.errors ? data.errors.join(', ') : data.error));
+                    alert('เกิดข้อผิดพลาด: ' + data.error);
+                }
+            } catch (err) { alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'); }
+            finally { btn.disabled = false; btn.innerText = 'ยืนยันการโอนเงิน'; }
+        };
+
+        // --- ส่วนที่ดึงข้อมูล Stock มาแสดงผล ---
+        async function updateStockDisplay() {
+            try {
+                // !!! สำคัญ: เปลี่ยน YOUR_SECRET_KEY ให้ตรงกับในไฟล์ .env ของคุณ !!!
+                const secret = 'YOUR_SECRET_KEY'; 
+                const res = await fetch(`/admin/stock-count?secret=${secret}`);
+                const data = await res.json();
+                if(data.ok) {
+                    document.getElementById('stock-standard').innerText = data.counts.standard + ' อัน';
+                    document.getElementById('stock-duo').innerText = data.counts.duo + ' อัน';
                 }
             } catch (err) {
-                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'ยืนยันการโอนเงิน';
+                console.error('Stock Update Error:', err);
+                document.getElementById('stock-standard').innerText = 'พร้อมส่ง';
+                document.getElementById('stock-duo').innerText = 'พร้อมส่ง';
             }
-        };
-    </script>
+        }
 
+        window.addEventListener('DOMContentLoaded', updateStockDisplay);
+    </script>
 </body>
 </html>
