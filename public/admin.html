@@ -1,230 +1,232 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dumuVPN Admin | Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f1f5f9; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .status-pending { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
-        .status-provisioned { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        .status-rejected { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DomuVPN Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: 'Kanit', sans-serif;
+    background: radial-gradient(circle at top,#0f172a,#020617);
+    color:white;
+}
+.glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.neon {
+    box-shadow: 0 0 20px rgba(59,130,246,0.4);
+}
+.fade {
+    animation: fadeIn .4s ease;
+}
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(10px)}
+    to {opacity:1; transform:translateY(0)}
+}
+</style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-white">dumuVPN <span class="text-blue-500 text-xl">Admin Control</span></h1>
-                <p class="text-slate-400">ระบบจัดการคำสั่งซื้อและอนุมัติ VPN</p>
-            </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <input type="password" id="adminSecret" placeholder="กรอก ADMIN_SECRET" 
-                    class="bg-slate-800 border border-white/10 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full">
-                <button onclick="refreshData()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20">
-                    รีเฟรช
-                </button>
-            </div>
-        </div>
 
-        <div id="statsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center"></div>
+<body class="p-6">
 
-        <div class="glass-card rounded-[2rem] p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <span class="mr-2">📦</span> เติมสินค้าเข้าคลัง
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-2">
-                    <label class="block text-xs text-slate-500 mb-1">Config Link (VLESS/Trojan)</label>
-                    <textarea id="stockConfig" placeholder="vless://... หรือ trojan://..." 
-                        class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none h-12"></textarea>
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-500 mb-1">เลือกแพ็กเกจ</label>
-                    <select id="stockPlan" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2 outline-none text-slate-300">
-                        <option value="standard">Standard (30 วัน)</option>
-                        <option value="duo">Duo (60 วัน)</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button onclick="addStock()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20">
-                        เพิ่มเข้าคลัง
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="max-w-7xl mx-auto">
 
-        <div class="glass-card rounded-[2rem] overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                <h2 class="text-xl font-semibold">รายการคำสั่งซื้อล่าสุด</h2>
-                <select id="statusFilter" onchange="fetchOrders()" class="bg-slate-800 border-none rounded-lg text-sm px-4 py-2 text-slate-300">
-                    <option value="">ทั้งหมด</option>
-                    <option value="pending">รอตรวจสอบ</option>
-                    <option value="provisioned">อนุมัติแล้ว</option>
-                    <option value="rejected">ปฏิเสธแล้ว</option>
-                </select>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider">
-                            <th class="p-5 font-medium">วันเวลา</th>
-                            <th class="p-5 font-medium">ลูกค้า / ติดต่อ</th>
-                            <th class="p-5 font-medium text-center">สลิป</th>
-                            <th class="p-5 font-medium">สถานะ</th>
-                            <th class="p-5 font-medium text-center">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ordersTableBody" class="divide-y divide-white/5">
-                        <tr><td colspan="5" class="p-10 text-center text-slate-500">กรุณาใส่ Secret Key และกดรีเฟรช</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Admin Dashboard</h1>
+
+    <div class="flex gap-2">
+        <input type="password" id="secret"
+        placeholder="ADMIN_SECRET"
+        class="bg-slate-800 px-4 py-2 rounded-xl">
+
+        <button onclick="init()"
+        class="bg-blue-600 px-4 py-2 rounded-xl neon">
+        โหลดข้อมูล
+        </button>
     </div>
+</div>
 
-    <div id="slipModal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4" onclick="closeSlip()">
-        <img id="slipImg" src="" class="max-h-full max-w-full rounded-lg shadow-2xl">
-    </div>
+<!-- STATS -->
+<div id="stats" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"></div>
 
-    <script>
-        const secretInput = document.getElementById('adminSecret');
-        secretInput.value = localStorage.getItem('vpn_admin_secret') || '';
+<!-- STOCK -->
+<div class="glass p-6 rounded-2xl mb-8">
+<h2 class="mb-4 text-xl">เพิ่ม Config</h2>
 
-        function getAuthHeaders() {
-            const secret = secretInput.value;
-            localStorage.setItem('vpn_admin_secret', secret);
-            return { 'x-admin-secret': secret };
-        }
+<textarea id="config" placeholder="vless://..."
+class="w-full p-3 bg-slate-800 rounded-xl mb-3"></textarea>
 
-        async function refreshData() {
-            if(!secretInput.value) return alert('กรุณากรอก Secret Key');
-            await fetchStats();
-            await fetchOrders();
-        }
+<select id="plan" class="w-full p-3 bg-slate-800 rounded-xl mb-3">
+<option value="standard">Standard</option>
+<option value="duo">Duo</option>
+</select>
 
-        // ฟังก์ชันเพิ่ม Stock (รวมให้แล้ว)
-        async function addStock() {
-            const config = document.getElementById('stockConfig').value;
-            const plan = document.getElementById('stockPlan').value;
-            const secret = secretInput.value;
+<button onclick="addStock()"
+class="bg-emerald-600 px-4 py-2 rounded-xl">
+เพิ่ม
+</button>
+</div>
 
-            if(!secret) return alert('กรุณากรอก Secret Key ก่อน');
-            if(!config) return alert('กรุณาวาง Config');
+<!-- ORDERS -->
+<div class="glass rounded-2xl overflow-hidden">
 
-            try {
-                const res = await fetch('/admin/stock/add', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-admin-secret': secret 
-                    },
-                    body: JSON.stringify({ plan, config })
-                });
-                const data = await res.json();
-                if(data.ok) {
-                    alert('เพิ่มสินค้าสำเร็จ! (เหลือในคลัง: ' + data.count + ')');
-                    document.getElementById('stockConfig').value = '';
-                    fetchStats(); // รีเฟรชตัวเลขสถิติเพื่อให้เห็นจำนวนล่าสุด
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            } catch (e) { alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'); }
-        }
+<div class="p-4 flex justify-between">
+<h2>Orders</h2>
 
-        async function fetchStats() {
-            try {
-                const res = await fetch('/admin/stats', { headers: getAuthHeaders() });
-                const data = await res.json();
-                if (!data.ok) return;
+<select id="filter" onchange="loadOrders()"
+class="bg-slate-800 px-3 py-2 rounded">
+<option value="">ทั้งหมด</option>
+<option value="pending">pending</option>
+<option value="provisioned">approved</option>
+<option value="rejected">rejected</option>
+</select>
+</div>
 
-                const s = data.stats;
-                const statsArr = [
-                    { label: 'รอตรวจสอบ', val: s.pending, color: 'text-amber-400' },
-                    { label: 'อนุมัติแล้ว', val: s.provisioned, color: 'text-emerald-400' },
-                    { label: 'ปฏิเสธ', val: s.rejected, color: 'text-red-400' },
-                    { label: 'รวม', val: s.total, color: 'text-blue-400' }
-                ];
+<table class="w-full text-sm">
+<thead class="bg-slate-800">
+<tr>
+<th class="p-3">ลูกค้า</th>
+<th>Email</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
 
-                document.getElementById('statsGrid').innerHTML = statsArr.map(st => `
-                    <div class="glass-card p-6 rounded-2xl">
-                        <p class="text-slate-400 text-xs mb-1">${st.label}</p>
-                        <p class="text-3xl font-bold ${st.color}">${st.val || 0}</p>
-                    </div>
-                `).join('');
-            } catch (e) { console.error(e); }
-        }
+<tbody id="table"></tbody>
+</table>
 
-        async function fetchOrders() {
-            const status = document.getElementById('statusFilter').value;
-            const tbody = document.getElementById('ordersTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center">กำลังโหลด...</td></tr>';
+</div>
 
-            try {
-                const res = await fetch(`/admin/orders?status=${status}`, { headers: getAuthHeaders() });
-                const data = await res.json();
-                if (!data.ok) throw new Error(data.error);
+</div>
 
-                tbody.innerHTML = data.orders.map(o => `
-                    <tr class="hover:bg-white/[0.02] transition-colors">
-                        <td class="p-5 text-sm">
-                            <div class="text-white">${new Date(o.created_at).toLocaleDateString()}</div>
-                            <div class="text-slate-500 text-xs">${new Date(o.created_at).toLocaleTimeString()}</div>
-                        </td>
-                        <td class="p-5">
-                            <div class="font-bold text-white">${o.name}</div>
-                            <div class="text-xs text-blue-400">${o.email}</div>
-                        </td>
-                        <td class="p-5 text-center">
-                            <button onclick="viewSlip('${o.id}')" class="text-slate-400 hover:text-white underline text-xs">👀 ดูรูป</button>
-                        </td>
-                        <td class="p-5">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold status-${o.status}">
-                                ${o.status.toUpperCase()}
-                            </span>
-                        </td>
-                        <td class="p-5 text-center">
-                            <div class="flex justify-center gap-2">
-                                ${o.status === 'pending' ? `
-                                    <button onclick="handleAction('approve', '${o.id}')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded text-xs font-bold transition-all text-white">Approve</button>
-                                    <button onclick="handleAction('reject', '${o.id}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded text-xs font-bold transition-all">Reject</button>
-                                ` : `<span class="text-slate-600 text-[10px]">เรียบร้อย</span>`}
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500">Error: ${e.message}</td></tr>`; }
-        }
+<!-- SLIP MODAL -->
+<div id="slipModal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center">
+<img id="slipImg" class="max-w-full max-h-full rounded">
+</div>
 
-        async function handleAction(action, id) {
-            let reason = '';
-            if (action === 'reject') {
-                reason = prompt('ระบุเหตุผล (จะถูกส่งในอีเมลลูกค้า):');
-                if (reason === null) return;
-            }
+<script>
 
-            try {
-                const res = await fetch(`/admin/${action}/${id}?secret=${secretInput.value}${reason ? '&reason='+reason : ''}`, { method: 'POST' });
-                if (res.ok) {
-                    alert('ดำเนินการสำเร็จ!');
-                    refreshData();
-                } else {
-                    alert('เกิดข้อผิดพลาด');
-                }
-            } catch (e) { alert('Network Error'); }
-        }
+function getSecret(){
+    const s = document.getElementById('secret').value;
+    localStorage.setItem('secret', s);
+    return s;
+}
 
-        function viewSlip(id) {
-            document.getElementById('slipImg').src = `/admin/slip/${id}?secret=${secretInput.value}`;
-            document.getElementById('slipModal').classList.remove('hidden');
-        }
+function init(){
+    loadStats();
+    loadOrders();
+}
 
-        function closeSlip() { document.getElementById('slipModal').classList.add('hidden'); }
+async function loadStats(){
+    const res = await fetch('/admin/stats',{
+        headers:{'x-admin-secret':getSecret()}
+    });
+    const data = await res.json();
 
-        if(secretInput.value) refreshData();
-    </script>
+    if(!data.ok) return alert('secret ผิด');
+
+    const s = data.stats;
+
+    document.getElementById('stats').innerHTML = `
+        ${card('Pending',s.pending)}
+        ${card('Approved',s.provisioned)}
+        ${card('Rejected',s.rejected)}
+        ${card('Total',s.total)}
+        ${card('Stock',s.stockLeft)}
+    `;
+}
+
+function card(name,val){
+    return `
+    <div class="glass p-4 rounded-xl text-center fade">
+        <div class="text-slate-400 text-xs">${name}</div>
+        <div class="text-2xl font-bold">${val}</div>
+    </div>`;
+}
+
+async function loadOrders(){
+    const status = document.getElementById('filter').value;
+
+    const res = await fetch(`/admin/orders?status=${status}`,{
+        headers:{'x-admin-secret':getSecret()}
+    });
+
+    const data = await res.json();
+
+    const table = document.getElementById('table');
+
+    table.innerHTML = data.orders.map(o=>`
+    <tr class="border-t border-white/5">
+        <td class="p-3">${o.name}</td>
+        <td>${o.email}</td>
+        <td>${o.status}</td>
+        <td>
+            <button onclick="viewSlip('${o.id}')">👁</button>
+
+            ${o.status==='pending'?`
+            <button onclick="approve('${o.id}')">✅</button>
+            <button onclick="reject('${o.id}')">❌</button>
+            `:''}
+        </td>
+    </tr>
+    `).join('');
+}
+
+async function approve(id){
+    if(!confirm('อนุมัติ?')) return;
+
+    await fetch(`/admin/approve/${id}?secret=${getSecret()}`,{method:'POST'});
+
+    alert('สำเร็จ');
+    init();
+}
+
+async function reject(id){
+    const reason = prompt('เหตุผล:');
+    if(!reason) return;
+
+    await fetch(`/admin/reject/${id}?secret=${getSecret()}&reason=${reason}`,{method:'POST'});
+
+    alert('ปฏิเสธแล้ว');
+    init();
+}
+
+async function addStock(){
+    const config = document.getElementById('config').value;
+    const plan = document.getElementById('plan').value;
+
+    await fetch('/admin/stock/add',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+            'x-admin-secret':getSecret()
+        },
+        body:JSON.stringify({plan,config})
+    });
+
+    alert('เพิ่มแล้ว');
+    loadStats();
+}
+
+function viewSlip(id){
+    document.getElementById('slipImg').src = `/admin/slip/${id}?secret=${getSecret()}`;
+    document.getElementById('slipModal').classList.remove('hidden');
+}
+
+document.getElementById('slipModal').onclick = ()=>{
+    document.getElementById('slipModal').classList.add('hidden');
+};
+
+// load saved secret
+document.getElementById('secret').value = localStorage.getItem('secret') || '';
+
+</script>
+
 </body>
 </html>
