@@ -164,7 +164,7 @@
         async function updateStockDisplay() {
             try {
                 // !!! สำคัญ: เปลี่ยน YOUR_SECRET_KEY ให้ตรงกับในไฟล์ .env ของคุณ !!!
-                const secret = 'bd45d019e5f4e1f74c4bab310049093ebc94c8a4c1bea79b'; 
+                const secret = ''; 
                 const res = await fetch(`/admin/stock-count?secret=${secret}`);
                 const data = await res.json();
                 if(data.ok) {
